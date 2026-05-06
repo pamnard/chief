@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chief"
+version = "0.1.0"
+description = "chief project"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "platformdirs>=4.2,<5",
+]
+
+[project.urls]
+Homepage = "https://github.com/pamnard/chief"
+Repository = "https://github.com/pamnard/chief"
+
+[tool.setuptools.packages.find]
+where = ["src"]

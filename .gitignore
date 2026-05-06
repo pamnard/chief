@@ -1,0 +1,17 @@
+# Локальные инструкции для агента Cursor — не коммитим
+AGENTS.md
+
+# Локальная документация — не коммитим
+docs/
+
+# На случай файла в корне — тоже не в git
+RELEASING.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
