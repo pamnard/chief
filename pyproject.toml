@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chief"
-version = "0.1.0"
+version = "0.2.0"
 description = "chief project"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -12,6 +12,12 @@ requires-python = ">=3.11"
 dependencies = [
     "platformdirs>=4.2,<5",
 ]
+
+[project.scripts]
+chief = "chief.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
 
 [project.urls]
 Homepage = "https://github.com/pamnard/chief"
