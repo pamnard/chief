@@ -109,25 +109,25 @@ class Episode:
         id: Stable identifier (e.g. UUID string).
         task: Original task text from the trigger.
         status: Current lifecycle state.
-        ticks: Ordered trace of phase records.
         max_cycles: Upper bound on orchestrator cycles (replan budget).
+        ticks: Ordered trace of phase records.
         artifact: Terminal message or failure token when finished.
     """
 
     id: str
     task: str
     status: EpisodeStatus
+    max_cycles: int
     ticks: list[Tick] = field(default_factory=list)
-    max_cycles: int = 16
     artifact: str | None = None
 
     @staticmethod
-    def new(task: str, max_cycles: int = 16) -> Episode:
+    def new(task: str, *, max_cycles: int) -> Episode:
         """Create a new running episode with a fresh id.
 
         Args:
             task: User task text (may be empty).
-            max_cycles: Maximum orchestrator cycles before forced failure.
+            max_cycles: Maximum orchestrator cycles before forced failure (from config or caller).
 
         Returns:
             Episode instance in ``RUNNING`` state with no ticks yet.

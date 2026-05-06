@@ -19,6 +19,7 @@ from chief.domain import (
 )
 from chief.memory import MemorySession, append_episode_jsonl
 from chief.policy import evaluate_intent
+from chief.config import RuntimeConfig
 from chief.tools import ToolFn
 
 
@@ -36,12 +37,13 @@ def _intent_to_dict(intent: Intent) -> dict:
     return {"type": "final", "message": intent.message}
 
 
-def run_episode(
+async def run_episode(
     task: str,
     *,
+    runtime: RuntimeConfig,
     brain: Brain,
     tools: Mapping[str, ToolFn],
-    max_cycles: int = 16,
+    max_cycles: int | None = None,
 ) -> Episode:
     """Execute one episode until completion, policy block, or cycle budget exhaustion.
 
@@ -50,14 +52,17 @@ def run_episode(
 
     Args:
         task: Task text passed to the planner and echoed tools.
+        runtime: Process configuration snapshot (episode limits, policy allowlist, …).
         brain: Planner implementation (:class:`~chief.brain.Brain`).
         tools: Registry mapping tool names to callables returning ``Observation``.
-        max_cycles: Maximum orchestrator cycles (replan budget).
+        max_cycles: Maximum orchestrator cycles; ``None`` uses ``runtime.episode_max_cycles``.
 
     Returns:
         Episode aggregate with terminal ``status`` and optional ``artifact`` message.
     """
-    episode = Episode.new(task, max_cycles=max_cycles)
+    mc = max_cycles if max_cycles is not None else runtime.episode_max_cycles
+    allowed = runtime.allowed_tools_policy
+    episode = Episode.new(task, max_cycles=mc)
     memory = MemorySession()
     cycle = 0
 
@@ -80,7 +85,7 @@ def run_episode(
         )
 
         try:
-            intent = brain.reason(memory, task)
+            intent = await brain.reason(memory, task)
         except Exception as exc:
             log(TickPhase.REASON, intent=None, error=str(exc))
             episode.status = EpisodeStatus.FAILED
@@ -88,7 +93,7 @@ def run_episode(
             break
         log(TickPhase.REASON, intent=_intent_to_dict(intent))
 
-        policy = evaluate_intent(intent, cycle, episode.max_cycles)
+        policy = evaluate_intent(intent, cycle, episode.max_cycles, allowed_tools=allowed)
         log(TickPhase.POLICY, allowed=policy.allowed, reason=policy.reason)
         if not policy.allowed:
             episode.status = EpisodeStatus.POLICY_BLOCKED

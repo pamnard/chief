@@ -9,6 +9,9 @@ docs/
 RELEASING.md
 SPEC.md
 
+# Локальный chief.toml в корне репо (если кто-то кладёт конфиг сюда вместо XDG)
+config/chief.toml
+
 # Python
 __pycache__/
 *.py[cod]

@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from chief.domain import Observation
+from chief.config import RuntimeConfig
 
 ToolFn = Callable[[dict[str, Any]], Observation]
 
@@ -50,14 +51,19 @@ def tool_broken(args: dict[str, Any]) -> Observation:
     return Observation(ok=False, payload={"tool": "broken", "error": "simulated failure"})
 
 
-def build_registry() -> dict[str, ToolFn]:
-    """Construct the default tool name → callable registry.
+_BUILTIN: dict[str, ToolFn] = {
+    "noop": tool_noop,
+    "echo": tool_echo,
+    "broken": tool_broken,
+}
 
-    Returns:
-        Mapping containing ``noop``, ``echo``, and ``broken``.
-    """
-    return {
-        "noop": tool_noop,
-        "echo": tool_echo,
-        "broken": tool_broken,
-    }
+
+def build_registry(runtime: RuntimeConfig) -> dict[str, ToolFn]:
+    """Build tool registry restricted to ``runtime.planner_allowed_tools``."""
+    out: dict[str, ToolFn] = {}
+    for name in runtime.planner_allowed_tools:
+        fn = _BUILTIN.get(name)
+        if fn is None:
+            raise ValueError(f"planner.allowed_tools contains unknown built-in tool: {name!r}")
+        out[name] = fn
+    return out

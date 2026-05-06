@@ -8,13 +8,20 @@ from __future__ import annotations
 from chief.domain import FinalIntent, Intent, PolicyResult, ToolIntent
 
 
-def evaluate_intent(intent: Intent, cycle: int, max_cycles: int) -> PolicyResult:
+def evaluate_intent(
+    intent: Intent,
+    cycle: int,
+    max_cycles: int,
+    *,
+    allowed_tools: frozenset[str],
+) -> PolicyResult:
     """Decide whether an intent may execute in the current cycle.
 
     Args:
         intent: Planner output (tool call or final message).
         cycle: Current orchestrator cycle index (0-based).
         max_cycles: Maximum allowed cycles before hard stop.
+        allowed_tools: Tool names permitted by planner policy (from merged config).
 
     Returns:
         ``PolicyResult`` with ``allowed`` False when budget is exhausted or intent
@@ -22,9 +29,7 @@ def evaluate_intent(intent: Intent, cycle: int, max_cycles: int) -> PolicyResult
     """
     if cycle >= max_cycles:
         return PolicyResult(False, "max_cycles_exceeded")
-    if isinstance(intent, ToolIntent) and intent.tool == "noop":
-        return PolicyResult(True)
-    if isinstance(intent, ToolIntent) and intent.tool in ("echo", "broken"):
+    if isinstance(intent, ToolIntent) and intent.tool in allowed_tools:
         return PolicyResult(True)
     if isinstance(intent, FinalIntent):
         return PolicyResult(True)

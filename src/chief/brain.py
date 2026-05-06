@@ -9,13 +9,14 @@ from typing import Protocol, runtime_checkable
 
 from chief.domain import FinalIntent, Intent, ToolIntent
 from chief.memory import MemorySession
+from chief.config import RuntimeConfig
 
 
 @runtime_checkable
 class Brain(Protocol):
     """Produces the next intent given session memory and task text."""
 
-    def reason(self, memory: MemorySession, task: str) -> Intent:
+    async def reason(self, memory: MemorySession, task: str) -> Intent:
         """Return the next planner decision.
 
         Args:
@@ -31,23 +32,26 @@ class Brain(Protocol):
 class FakeBrain:
     """Deterministic scripted planner for tests and offline demos.
 
-    Sequence: call ``broken`` once, then ``echo`` with the task text, then emit a
-    ``FinalIntent`` after a successful observation—exercising replanning on failure.
+    Tool sequence comes from :class:`~chief.config.runtime.RuntimeConfig` (built at process start).
     """
 
-    def reason(self, memory: MemorySession, task: str) -> Intent:
+    def __init__(self, runtime: RuntimeConfig) -> None:
+        self._first = runtime.fake_brain_first_tool
+        self._second = runtime.fake_brain_second_tool
+
+    async def reason(self, memory: MemorySession, task: str) -> Intent:
         """Drive the scripted multi-step scenario based on prior observations.
 
         Args:
             memory: Session containing zero or more observations.
-            task: Task text forwarded to ``echo`` after the simulated failure.
+            task: Task text forwarded to the second tool after the simulated failure.
 
         Returns:
             ``ToolIntent`` or ``FinalIntent`` according to the scripted state machine.
         """
         last = memory.last_observation()
         if last is None:
-            return ToolIntent("broken", {})
+            return ToolIntent(self._first, {})
         if not last.ok:
-            return ToolIntent("echo", {"text": task or "ok"})
+            return ToolIntent(self._second, {"text": task or "ok"})
         return FinalIntent(f"done: {task!r}" if task else "done")

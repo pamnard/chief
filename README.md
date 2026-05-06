@@ -1,8 +1,8 @@
 # chief
 
-Проект **chief** — [github.com/pamnard/chief](https://github.com/pamnard/chief). Исходный код и публичные материалы в корне и в отслеживаемых git каталогах; приватные заметки и черновики не входят в репозиторий (см. `.gitignore`).
+[github.com/pamnard/chief](https://github.com/pamnard/chief)
 
-После установки (`pip install -e .`): `chief run пример задачи` (планировщик по умолчанию **fake**, без сети). Для LLM: реализация `chief.llm.HttpChatCompletionsBrain` (wire-формат Chat Completions; переменные `CHIEF_LLM_BASE_URL`, `CHIEF_LLM_MODEL`, при необходимости `CHIEF_LLM_API_KEY`), затем `chief run --brain llm …`. Локальный **Ollama** в совместимом режиме: база `http://127.0.0.1:11434/v1`.
+Установка: `pip install -e .`. Дефолты в пакете (`chief/config/defaults.toml`); переопределение — `$XDG_CONFIG_HOME/chief/chief.toml` (часто `~/.config/chief/chief.toml`), путь в `CHIEF_CONFIG` / `CHIEF_CONFIG_FILE`, либо переменные `CHIEF_*` (карта ключей в `src/chief/config/loader.py`). Запуск: `chief run текст задачи`.
 
 ## Лицензия
 

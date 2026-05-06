@@ -1,29 +1,29 @@
-"""Optional integration tests against any OpenAI-compatible Chat Completions API.
+"""Optional integration tests against an OpenAI-compat ``/v1/chat/completions`` gateway.
 
-For local Ollama: ``ollama serve`` with OpenAI compatibility (default base in code).
-Enable with ``CHIEF_TEST_LLM=1``.
+Configure ``[custom_llm]`` in merged config (defaults + XDG / ``CHIEF_CONFIG`` / ``CHIEF_LLM_*``).
+Enable with ``CHIEF_TEST_LLM=1`` or ``[test].enable_llm_integration = true``.
 """
 
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from chief.domain import FinalIntent, ToolIntent
+from chief.llm import CustomChatCompletionsBrain
 from chief.memory import MemorySession
-from chief.llm import HttpChatCompletionsBrain
+from chief.config import build_runtime_config
 
 
 @pytest.mark.integration
-def test_openai_chat_completion_returns_intent() -> None:
-    """One live ``/v1/chat/completions`` call; skipped unless ``CHIEF_TEST_LLM=1``."""
-    if os.environ.get("CHIEF_TEST_LLM") != "1":
-        pytest.skip("set CHIEF_TEST_LLM=1 to exercise LLM provider")
+async def test_openai_chat_completion_returns_intent() -> None:
+    """One live ``/v1/chat/completions`` call; skipped unless integration flag is on."""
+    runtime = build_runtime_config()
+    if not runtime.llm_integration_enabled:
+        pytest.skip("set CHIEF_TEST_LLM=1 or [test].enable_llm_integration=true in merged config")
 
-    brain = HttpChatCompletionsBrain.from_env()
+    brain = CustomChatCompletionsBrain.from_runtime(runtime)
     mem = MemorySession()
-    intent = brain.reason(
+    intent = await brain.reason(
         mem,
         'Return exactly this JSON object and nothing else: '
         '{"intent_type":"final","message":"ok-from-llm"}',

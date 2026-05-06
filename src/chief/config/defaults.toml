@@ -1,0 +1,43 @@
+# Bundled defaults — single source for literals (override via XDG config, CHIEF_CONFIG, or CHIEF_* env).
+
+[episode]
+max_cycles = 16
+
+[planner]
+allowed_tools = ["noop", "echo", "broken"]
+system_prompt_template = """You are the Reason phase of a single-step agent loop. Reply with ONE JSON object only, no prose. Allowed tool names: {allowed_tools}. Shape A: {\"intent_type\":\"tool\",\"tool\":\"<name>\",\"args\":{...}} Shape B: {\"intent_type\":\"final\",\"message\":\"<user-facing summary>\"}. Use final when the task is done or impossible. Use echo with args {\"text\": \"...\"} to return text to the user. Prefer small args objects."""
+
+[fake_brain]
+first_tool = "broken"
+second_tool = "echo"
+
+[test]
+enable_llm_integration = false
+
+[openai]
+vendor_api_base = "https://api.openai.com/v1"
+model = "gpt-4o-mini"
+api_key = "REPLACE_ME_OR_USE_CHIEF_OPENAI_API_KEY"
+timeout_seconds = 120
+json_mode = false
+
+[custom_llm]
+base_url = "http://127.0.0.1:11434/v1"
+model = "gemma4:e4b"
+api_key = ""
+timeout_seconds = 120
+json_mode = false
+
+[anthropic]
+vendor_api_base = "https://api.anthropic.com/v1"
+api_version = "2023-06-01"
+api_key = "REPLACE_ME_OR_USE_CHIEF_ANTHROPIC_API_KEY"
+model = "claude-3-5-haiku-20241022"
+timeout_seconds = 120
+max_tokens = 4096
+
+[gemini]
+vendor_api_base = "https://generativelanguage.googleapis.com/v1beta"
+api_key = "REPLACE_ME_OR_USE_CHIEF_GEMINI_API_KEY"
+model = "gemini-1.5-flash"
+timeout_seconds = 120

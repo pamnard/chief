@@ -13,13 +13,20 @@ from chief.brain import Brain, FakeBrain
 from chief.domain import EpisodeStatus, ToolIntent
 from chief.engine import run_episode
 from chief.memory import MemorySession
+from chief.config import RuntimeConfig, build_runtime_config
 from chief.tools import build_registry
+
+
+@pytest.fixture
+def runtime() -> RuntimeConfig:
+    """Single config snapshot per test (one merge from disk / env)."""
+    return build_runtime_config()
 
 
 class BrokenBrain:
     """Brain implementation that always requests the ``broken`` tool."""
 
-    def reason(self, memory: MemorySession, task: str) -> ToolIntent:
+    async def reason(self, memory: MemorySession, task: str) -> ToolIntent:
         """Return a failing tool intent on every call.
 
         Args:
@@ -53,9 +60,17 @@ def isolated_episode_logs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pa
     return log_root
 
 
-def test_fake_brain_completes_with_replan(isolated_episode_logs: Path) -> None:
+async def test_fake_brain_completes_with_replan(
+    isolated_episode_logs: Path, runtime: RuntimeConfig
+) -> None:
     """FakeBrain should recover after a simulated failure and emit a final artifact."""
-    ep = run_episode("hello", brain=FakeBrain(), tools=build_registry(), max_cycles=8)
+    ep = await run_episode(
+        "hello",
+        runtime=runtime,
+        brain=FakeBrain(runtime),
+        tools=build_registry(runtime),
+        max_cycles=8,
+    )
     assert ep.status == EpisodeStatus.COMPLETED
     assert ep.artifact and "hello" in ep.artifact
     phases = [t.phase.value for t in ep.ticks]
@@ -66,23 +81,29 @@ def test_fake_brain_completes_with_replan(isolated_episode_logs: Path) -> None:
     assert len(lines) == len(ep.ticks)
 
 
-def test_max_cycles_exceeded(isolated_episode_logs: Path) -> None:
+async def test_max_cycles_exceeded(isolated_episode_logs: Path, runtime: RuntimeConfig) -> None:
     """Budget exhaustion should fail the episode before completion."""
-    ep = run_episode("x", brain=BrokenBrain(), tools=build_registry(), max_cycles=2)
+    ep = await run_episode(
+        "x",
+        runtime=runtime,
+        brain=BrokenBrain(),
+        tools=build_registry(runtime),
+        max_cycles=2,
+    )
     assert ep.status == EpisodeStatus.FAILED
     assert ep.artifact == "max_cycles_exceeded"
 
 
-def test_brain_protocol_fake() -> None:
+async def test_brain_protocol_fake(runtime: RuntimeConfig) -> None:
     """Runtime-checkable protocol should accept FakeBrain."""
-    b: Brain = FakeBrain()
+    b: Brain = FakeBrain(runtime)
     assert isinstance(b, Brain)
 
 
 class RaisingBrain:
     """Brain that always raises, to exercise engine error handling."""
 
-    def reason(self, memory: MemorySession, task: str) -> ToolIntent:
+    async def reason(self, memory: MemorySession, task: str) -> ToolIntent:
         """Always raise for deterministic failure tests.
 
         Args:
@@ -95,9 +116,17 @@ class RaisingBrain:
         raise RuntimeError("boom")
 
 
-def test_brain_exception_marks_episode_failed(isolated_episode_logs: Path) -> None:
+async def test_brain_exception_marks_episode_failed(
+    isolated_episode_logs: Path, runtime: RuntimeConfig
+) -> None:
     """Planner exceptions should surface as ``FAILED`` with ``brain_error`` prefix."""
-    ep = run_episode("x", brain=RaisingBrain(), tools=build_registry(), max_cycles=4)
+    ep = await run_episode(
+        "x",
+        runtime=runtime,
+        brain=RaisingBrain(),
+        tools=build_registry(runtime),
+        max_cycles=4,
+    )
     assert ep.status == EpisodeStatus.FAILED
     assert ep.artifact is not None
     assert "brain_error" in ep.artifact

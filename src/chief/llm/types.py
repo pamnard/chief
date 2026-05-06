@@ -15,7 +15,8 @@ class ChatWireFormat(str, Enum):
     """Supported wire protocols for LLM-backed :class:`~chief.brain.Brain` adapters."""
 
     OPENAI_CHAT_COMPLETIONS = "openai_chat_completions"
-    # Future: ANTHROPIC_MESSAGES, GOOGLE_GENERATIVE, ...
+    ANTHROPIC_MESSAGES = "anthropic_messages"
+    GOOGLE_GENERATIVE_AI = "google_generative_ai"
 
 
 @dataclass(frozen=True)
@@ -24,8 +25,9 @@ class ProviderEndpoint:
 
     Attributes:
         wire_format: Protocol used when encoding requests and decoding responses.
-        api_base: URL prefix ending with ``/v1`` for OpenAI-compatible stacks.
-        api_key: Optional bearer token (many local servers omit this).
+        api_base: Base URL for that wire (see codec module for trailing path rules).
+        api_key: Optional secret (bearer for OpenAI/Anthropic; for Gemini often passed
+            in query string by the provider adapter instead of this field).
     """
 
     wire_format: ChatWireFormat

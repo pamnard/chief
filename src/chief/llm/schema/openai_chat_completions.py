@@ -1,7 +1,7 @@
 """Codec for OpenAI ``POST /v1/chat/completions`` JSON (wire format).
 
-This is the **message interchange shape** used by many providers (OpenAI, proxies,
-Ollama OpenAI compatibility, etc.), not the OpenAI company itself.
+This is the **message interchange shape** used by many gateways and vendors (not tied
+to a single product name in ``chief`` code).
 """
 
 from __future__ import annotations
