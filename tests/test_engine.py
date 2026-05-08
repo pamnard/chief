@@ -39,27 +39,6 @@ class BrokenBrain:
         return ToolIntent("broken", {})
 
 
-@pytest.fixture
-def isolated_episode_logs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Redirect episode JSONL output into a temporary directory.
-
-    Args:
-        tmp_path: Pytest temporary directory fixture.
-        monkeypatch: Pytest monkeypatch fixture.
-
-    Returns:
-        Path to the fake episodes root directory.
-    """
-    log_root = tmp_path / "episodes"
-    log_root.mkdir(parents=True, exist_ok=True)
-
-    def _dir() -> Path:
-        return log_root
-
-    monkeypatch.setattr("chief.memory.episodes_log_dir", _dir)
-    return log_root
-
-
 async def test_fake_brain_completes_with_replan(
     isolated_episode_logs: Path, runtime: RuntimeConfig
 ) -> None:

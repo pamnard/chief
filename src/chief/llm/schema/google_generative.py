@@ -21,8 +21,11 @@ def generate_content_url(api_base: str, model: ModelRef) -> str:
     """Build ``POST`` URL ``{api_base}/models/{model}:generateContent``.
 
     Args:
-        api_base: e.g. ``https://generativelanguage.googleapis.com/v1beta``.
-        model: Model id (e.g. ``gemini-1.5-flash``).
+        api_base: API root, for example ``https://generativelanguage.googleapis.com/v1beta``.
+        model: Model id (for example ``gemini-1.5-flash``); a ``models/`` prefix is stripped if present.
+
+    Returns:
+        Full URL path for ``generateContent`` (caller appends ``?key=`` as needed).
     """
     root = api_base.rstrip("/")
     mid = model.id
@@ -32,7 +35,14 @@ def generate_content_url(api_base: str, model: ModelRef) -> str:
 
 
 def build_contents(user_text: str) -> list[dict[str, Any]]:
-    """Single user turn in Gemini ``contents`` shape."""
+    """Build Gemini ``contents`` for a single user text turn.
+
+    Args:
+        user_text: Serialized task and observation context.
+
+    Returns:
+        ``contents`` list with one user role entry and a single text part.
+    """
     return [{"role": "user", "parts": [{"text": user_text}]}]
 
 
@@ -41,7 +51,15 @@ def build_request_body(
     contents: list[dict[str, Any]],
     system_instruction: str | None,
 ) -> dict[str, Any]:
-    """Assemble JSON body for ``generateContent``."""
+    """Assemble the JSON body for ``generateContent``.
+
+    Args:
+        contents: Conversation turns (typically from :func:`build_contents`).
+        system_instruction: Optional system prompt; omitted from the body when ``None`` or empty.
+
+    Returns:
+        Serializable request payload for the Generative Language API.
+    """
     body: dict[str, Any] = {"contents": contents}
     if system_instruction:
         body["systemInstruction"] = {"parts": [{"text": system_instruction}]}
@@ -49,7 +67,17 @@ def build_request_body(
 
 
 def extract_assistant_text(response_json: dict[str, Any]) -> str:
-    """Read first candidate text part from a ``generateContent`` response."""
+    """Read the first candidate text part from a ``generateContent`` response.
+
+    Args:
+        response_json: Parsed JSON body from a successful ``generateContent`` response.
+
+    Returns:
+        Assistant text from the first candidate's first part.
+
+    Raises:
+        ChatCompletionTransportError: If the response shape is unexpected or text is not a string.
+    """
     try:
         cands = response_json["candidates"]
         parts = cands[0]["content"]["parts"]

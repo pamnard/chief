@@ -67,8 +67,12 @@ async def run_episode(
     cycle = 0
 
     def log(phase: TickPhase, **data: object) -> None:
-        """Append a tick and mirror it to JSONL."""
+        """Append one tick to the episode and append the same record to JSONL.
 
+        Args:
+            phase: Pipeline phase for this tick.
+            **data: Arbitrary structured fields stored on the tick (JSON-serializable).
+        """
         t = episode.append_tick(cycle, phase, **{k: v for k, v in data.items()})
         append_episode_jsonl(episode.id, t)
 

@@ -21,7 +21,7 @@ def chat_completions_url(api_base_v1: str) -> str:
     """Build ``POST`` URL for Chat Completions.
 
     Args:
-        api_base: Prefix ending with ``/v1`` (no trailing slash required).
+        api_base_v1: Prefix ending with ``/v1`` (no trailing slash required).
 
     Returns:
         Full URL ending with ``chat/completions``.

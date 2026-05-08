@@ -21,7 +21,7 @@ def evaluate_intent(
         intent: Planner output (tool call or final message).
         cycle: Current orchestrator cycle index (0-based).
         max_cycles: Maximum allowed cycles before hard stop.
-        allowed_tools: Tool names permitted by planner policy (from merged config).
+        allowed_tools: Tool names permitted by policy (typically ``runtime.allowed_tools_policy``).
 
     Returns:
         ``PolicyResult`` with ``allowed`` False when budget is exhausted or intent

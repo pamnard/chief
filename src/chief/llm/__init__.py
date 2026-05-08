@@ -6,9 +6,8 @@ Layout:
   :class:`~chief.llm.types.ModelRef` (where to call, which protocol, which model id).
 * ``chief.llm.schema.*`` — vendor-neutral **wire schemas**: build URL/body, parse assistant text for one API shape.
 * ``chief.llm.planner_context`` — **shared** user/system text for the planner (same across brains).
-* ``chief.llm.providers.*`` — planners are built with :meth:`~chief.llm.providers.openai.OpenAiChatCompletionsBrain.from_runtime`
-  from a process-wide :class:`~chief.config.runtime.RuntimeConfig` (see :func:`~chief.config.runtime.build_runtime_config`).
-  schema ``schema.openai_chat_completions`` for the chat-completions path.
+* ``chief.llm.providers.*`` — HTTP brains expose ``from_runtime`` and take a process-wide
+  :class:`~chief.config.runtime.RuntimeConfig` from :func:`~chief.config.runtime.build_runtime_config`.
 """
 
 from chief.llm.errors import ChatCompletionTransportError, IntentPayloadError, LlmError

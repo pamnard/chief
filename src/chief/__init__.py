@@ -1,6 +1,6 @@
 """Public package surface for ``chief``: episode runtime types and ``run_episode``.
 
-This package implements the v0 agent episode loop (see internal SPEC). Imports here
+This package implements the v0 agent episode loop. Imports here
 are intentionally minimal so downstream code can depend on a stable API.
 
 ``run_episode`` is **async**; build :class:`~chief.config.runtime.RuntimeConfig` once (e.g.
@@ -8,7 +8,7 @@ are intentionally minimal so downstream code can depend on a stable API.
 or ``await`` inside an async task.
 """
 
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 
 from chief.domain import Episode, EpisodeStatus, Observation
 from chief.engine import run_episode

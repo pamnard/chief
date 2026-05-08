@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from platformdirs import user_state_dir
+from platformdirs import user_runtime_dir, user_state_dir
 
 
 def episodes_log_dir() -> Path:
@@ -20,3 +20,16 @@ def episodes_log_dir() -> Path:
     d = base / "episodes"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def default_serve_socket_path() -> Path:
+    """Return the default Unix socket path for ``chief serve`` under XDG runtime.
+
+    The parent directory is created if missing (same pattern as episode logs).
+
+    Returns:
+        Absolute path ``…/chief.sock`` under :func:`platformdirs.user_runtime_dir` for ``chief``.
+    """
+    base = Path(user_runtime_dir("chief", appauthor=False))
+    base.mkdir(parents=True, exist_ok=True)
+    return base / "chief.sock"

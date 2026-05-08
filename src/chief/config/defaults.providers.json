@@ -1,0 +1,46 @@
+{
+    "providers": [
+        {
+            "id": "custom_llm",
+            "kind": "custom_llm",
+            "base_url": "http://127.0.0.1:11434/v1",
+            "model": "gemma4:e4b",
+            "api_key": "",
+            "timeout_seconds": 120
+        },
+        {
+            "id": "local_chat_api",
+            "kind": "custom_llm",
+            "base_url": "http://127.0.0.1:8001/api/v1",
+            "model": "gemini-2.5-flash",
+            "api_key": "",
+            "timeout_seconds": 120
+        },
+        {
+            "id": "openai",
+            "kind": "openai",
+            "base_url": "https://api.openai.com/v1",
+            "model": "gpt-4o-mini",
+            "api_key": "REPLACE_ME_OR_USE_ENV",
+            "timeout_seconds": 120
+        },
+        {
+            "id": "anthropic",
+            "kind": "anthropic",
+            "base_url": "https://api.anthropic.com/v1",
+            "api_version": "2023-06-01",
+            "api_key": "REPLACE_ME_OR_USE_ENV",
+            "model": "claude-3-5-haiku-20241022",
+            "timeout_seconds": 120,
+            "max_tokens": 4096
+        },
+        {
+            "id": "gemini",
+            "kind": "gemini",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta",
+            "api_key": "REPLACE_ME_OR_USE_ENV",
+            "model": "gemini-1.5-flash",
+            "timeout_seconds": 120
+        }
+    ]
+}

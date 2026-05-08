@@ -1,0 +1,187 @@
+{
+    "models": [
+        {
+            "id": "ollama-gemma4-e4b",
+            "provider_id": "custom_llm",
+            "model": "gemma4:e4b",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-gemma3-27b",
+            "provider_id": "custom_llm",
+            "model": "gemma3:27b",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-llama3-1-latest",
+            "provider_id": "custom_llm",
+            "model": "llama3.1:latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-gemma3-latest",
+            "provider_id": "custom_llm",
+            "model": "gemma3:latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-gemma3-1b",
+            "provider_id": "custom_llm",
+            "model": "gemma3:1b",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "ollama-phi4-mini-latest",
+            "provider_id": "custom_llm",
+            "model": "phi4-mini:latest",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "ollama-mistral-latest",
+            "provider_id": "custom_llm",
+            "model": "mistral:latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-mistral-nemo-latest",
+            "provider_id": "custom_llm",
+            "model": "mistral-nemo:latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-hermes3-latest",
+            "provider_id": "custom_llm",
+            "model": "hermes3:latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "ollama-hermes3-3b",
+            "provider_id": "custom_llm",
+            "model": "hermes3:3b",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemini-2-5-flash",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.5-flash",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-2-0-flash",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.0-flash",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-2-5-pro",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.5-pro",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-3-pro-preview",
+            "provider_id": "local_chat_api",
+            "model": "gemini-3-pro-preview",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-flash-latest",
+            "provider_id": "local_chat_api",
+            "model": "gemini-flash-latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-pro-latest",
+            "provider_id": "local_chat_api",
+            "model": "gemini-pro-latest",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-2-0-flash-lite",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.0-flash-lite",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemini-2-5-flash-lite",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.5-flash-lite",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemini-2-5-flash-lite-preview-09",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.5-flash-lite-preview-09",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemini-2-5-flash-preview-09",
+            "provider_id": "local_chat_api",
+            "model": "gemini-2.5-flash-preview-09",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-3-flash-preview",
+            "provider_id": "local_chat_api",
+            "model": "gemini-3-flash-preview",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemini-flash-lite-latest",
+            "provider_id": "local_chat_api",
+            "model": "gemini-flash-lite-latest",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemma-3-12b-it",
+            "provider_id": "local_chat_api",
+            "model": "gemma-3-12b-it",
+            "json_mode": false,
+            "supports_tools": false
+        },
+        {
+            "id": "gw-gemma-3-1b-it",
+            "provider_id": "local_chat_api",
+            "model": "gemma-3-1b-it",
+            "json_mode": false,
+            "supports_tools": false,
+            "technical": true
+        },
+        {
+            "id": "gw-gemma-3-27b-it",
+            "provider_id": "local_chat_api",
+            "model": "gemma-3-27b-it",
+            "json_mode": false,
+            "supports_tools": false
+        }
+    ]
+}

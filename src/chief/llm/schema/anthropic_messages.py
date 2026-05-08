@@ -22,12 +22,25 @@ def messages_url(api_base_v1: str) -> str:
 
     Args:
         api_base_v1: Prefix such as ``https://api.anthropic.com/v1`` (no trailing slash).
+
+    Returns:
+        Full URL ending with ``/messages``.
     """
     return api_base_v1.rstrip("/") + "/messages"
 
 
 def build_messages(user_content: str) -> list[dict[str, str]]:
-    """Anthropic ``messages`` array for a single user turn (system is separate)."""
+    """Build the Anthropic ``messages`` array for a single user turn.
+
+    The Messages API carries the system prompt in a separate top-level field; this helper
+    only shapes the conversational ``messages`` list.
+
+    Args:
+        user_content: Serialized task and observation context for the user role.
+
+    Returns:
+        A one-element list with role ``user`` and the given ``content`` string.
+    """
     return [{"role": "user", "content": user_content}]
 
 
@@ -38,7 +51,17 @@ def build_request_body(
     system: str,
     max_tokens: int,
 ) -> dict[str, Any]:
-    """Assemble JSON body for ``/v1/messages``."""
+    """Assemble the JSON body for ``POST /v1/messages``.
+
+    Args:
+        model: Target model identifier.
+        messages: Chat turns (typically a single user message from :func:`build_messages`).
+        system: System prompt text (separate from ``messages`` per Anthropic API).
+        max_tokens: Maximum tokens to generate in the assistant reply.
+
+    Returns:
+        Serializable request payload for the Messages API.
+    """
     return {
         "model": model.id,
         "max_tokens": max_tokens,
@@ -48,7 +71,17 @@ def build_request_body(
 
 
 def extract_assistant_text(response_json: dict[str, Any]) -> str:
-    """Read first text block from assistant ``content`` list."""
+    """Read the first text block from the assistant ``content`` list in a response.
+
+    Args:
+        response_json: Parsed JSON body from a successful Messages API response.
+
+    Returns:
+        Assistant text from the first ``type: text`` content block.
+
+    Raises:
+        ChatCompletionTransportError: If the envelope shape is unexpected or content is not text.
+    """
     try:
         content = response_json["content"]
         block = content[0]

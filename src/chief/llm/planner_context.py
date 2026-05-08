@@ -14,7 +14,15 @@ from chief.memory import MemorySession
 
 
 def serialize_episode_context(memory: MemorySession, task: str) -> str:
-    """Build user-side text listing task and prior observations."""
+    """Build user-side planner text listing the task and prior observations.
+
+    Args:
+        memory: Session containing observations from earlier act phases in this episode.
+        task: Original task string from the trigger.
+
+    Returns:
+        Multi-line string suitable as the user message alongside a fixed system prompt.
+    """
     lines = [f"Task: {task}"]
     for i, obs in enumerate(memory.observations, start=1):
         payload = json.dumps(obs.payload, ensure_ascii=False)

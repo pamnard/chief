@@ -1,4 +1,8 @@
-""":class:`~chief.brain.Brain` for Google Generative Language ``generateContent``."""
+"""Google Generative Language **generateContent** (:class:`~chief.brain.Brain`).
+
+Uses :mod:`chief.llm.schema.google_generative` for URL (model in path), query ``key=``, and body.
+Reads the canonical ``gemini`` slice from :class:`~chief.config.runtime.RuntimeConfig`.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +24,16 @@ from chief.config import RuntimeConfig
 
 @dataclass(frozen=True)
 class GeminiGenerateContentBrain:
-    """Brain using Gemini ``generateContent`` (API key in query string)."""
+    """Brain that calls Gemini ``generateContent`` once per :meth:`reason`.
+
+    The API key is appended as ``?key=`` on the request URL (not in ``Authorization``).
+
+    Attributes:
+        endpoint: API base (e.g. ``v1beta`` root) and API key for the query string.
+        model: Gemini model id (embedded in the URL path by the schema helper).
+        timeout_seconds: Per-request ``httpx`` timeout budget.
+        system_prompt: Rendered planner instructions (system instruction in the body).
+    """
 
     endpoint: ProviderEndpoint
     model: ModelRef
@@ -28,6 +41,11 @@ class GeminiGenerateContentBrain:
     system_prompt: str
 
     def __post_init__(self) -> None:
+        """Validate wire format and that a non-empty API key is present.
+
+        Raises:
+            ValueError: If the wire format is not ``GOOGLE_GENERATIVE_AI`` or ``api_key`` is empty.
+        """
         if self.endpoint.wire_format is not ChatWireFormat.GOOGLE_GENERATIVE_AI:
             raise ValueError(
                 f"GeminiGenerateContentBrain requires GOOGLE_GENERATIVE_AI, got {self.endpoint.wire_format!r}"
@@ -37,6 +55,14 @@ class GeminiGenerateContentBrain:
 
     @classmethod
     def from_runtime(cls, rt: RuntimeConfig) -> GeminiGenerateContentBrain:
+        """Build from the canonical ``gemini`` slice and planner prompt on ``rt``.
+
+        Args:
+            rt: Snapshot from :func:`chief.config.runtime.build_runtime_config`.
+
+        Returns:
+            Frozen brain whose endpoint and model mirror ``rt.gemini``.
+        """
         g = rt.gemini
         base = g.vendor_api_base.rstrip("/")
         endpoint = ProviderEndpoint(
@@ -52,7 +78,19 @@ class GeminiGenerateContentBrain:
         )
 
     async def reason(self, memory: MemorySession, task: str) -> Intent:
-        """POST ``generateContent`` and map assistant text to ``Intent``."""
+        """POST ``generateContent`` once and map candidate text to an intent.
+
+        Args:
+            memory: Episode memory serialized into request ``contents``.
+            task: Task string for this reasoning step.
+
+        Returns:
+            A :class:`~chief.domain.ToolIntent` or :class:`~chief.domain.FinalIntent`.
+
+        Raises:
+            ChatCompletionTransportError: On non-success HTTP status or transport errors from httpx.
+            IntentPayloadError: If the model response is not valid planner JSON.
+        """
         user = serialize_episode_context(memory, task)
         contents = gg.build_contents(user)
         payload = gg.build_request_body(contents=contents, system_instruction=self.system_prompt)

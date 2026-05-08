@@ -14,30 +14,10 @@ second_tool = "echo"
 [test]
 enable_llm_integration = false
 
-[openai]
-vendor_api_base = "https://api.openai.com/v1"
-model = "gpt-4o-mini"
-api_key = "REPLACE_ME_OR_USE_CHIEF_OPENAI_API_KEY"
-timeout_seconds = 120
-json_mode = false
+# Product default: local OpenAI-compat (Ollama) from bundled registry. Tests set CHIEF_DEFAULT_PROVIDER=fake (see conftest).
+[chief]
+default_provider = "custom_llm"
 
-[custom_llm]
-base_url = "http://127.0.0.1:11434/v1"
-model = "gemma4:e4b"
-api_key = ""
-timeout_seconds = 120
-json_mode = false
-
-[anthropic]
-vendor_api_base = "https://api.anthropic.com/v1"
-api_version = "2023-06-01"
-api_key = "REPLACE_ME_OR_USE_CHIEF_ANTHROPIC_API_KEY"
-model = "claude-3-5-haiku-20241022"
-timeout_seconds = 120
-max_tokens = 4096
-
-[gemini]
-vendor_api_base = "https://generativelanguage.googleapis.com/v1beta"
-api_key = "REPLACE_ME_OR_USE_CHIEF_GEMINI_API_KEY"
-model = "gemini-1.5-flash"
-timeout_seconds = 120
+# Empty socket_path → :func:`chief.paths.default_serve_socket_path`.
+[serve]
+socket_path = ""

@@ -22,11 +22,23 @@ from chief.llm.schema import openai_chat_completions as occ
 from chief.llm.types import ChatWireFormat, ModelRef, ProviderEndpoint
 from chief.memory import MemorySession
 from chief.config import RuntimeConfig
+from chief.config.runtime import openai_wire_model_and_json_mode
 
 
 @dataclass(frozen=True)
 class CustomChatCompletionsBrain:
-    """Planner for a **custom** ``/v1`` base URL (OpenAI Chat Completions wire)."""
+    """Planner for a **custom** gateway speaking the OpenAI Chat Completions JSON wire.
+
+    Unlike :class:`~chief.llm.providers.openai.OpenAiChatCompletionsBrain`, this class does not
+    assume the OpenAI vendor host; ``api_base`` comes from the user registry (e.g. local Ollama).
+
+    Attributes:
+        endpoint: Target base URL and optional bearer token (OpenAI-shaped wire).
+        model: Model id passed through to the request body.
+        timeout_seconds: Per-request ``httpx`` timeout budget.
+        request_json_mode: Chat Completions ``response_format`` JSON object mode when supported.
+        system_prompt: Rendered planner instructions (allowed tools, JSON shapes).
+    """
 
     endpoint: ProviderEndpoint
     model: ModelRef
@@ -35,6 +47,11 @@ class CustomChatCompletionsBrain:
     system_prompt: str
 
     def __post_init__(self) -> None:
+        """Reject endpoints that do not use the Chat Completions wire enum.
+
+        Raises:
+            ValueError: If ``endpoint.wire_format`` is not ``OPENAI_CHAT_COMPLETIONS``.
+        """
         if self.endpoint.wire_format is not ChatWireFormat.OPENAI_CHAT_COMPLETIONS:
             raise ValueError(
                 f"CustomChatCompletionsBrain requires OPENAI_CHAT_COMPLETIONS wire, "
@@ -43,6 +60,15 @@ class CustomChatCompletionsBrain:
 
     @classmethod
     def from_runtime(cls, rt: RuntimeConfig) -> CustomChatCompletionsBrain:
+        """Build from the canonical ``custom_llm`` slice and planner prompt on ``rt``.
+
+        Args:
+            rt: Snapshot from :func:`chief.config.runtime.build_runtime_config` (must include
+                registry id ``custom_llm`` with kind ``custom_llm``).
+
+        Returns:
+            Frozen brain whose ``api_base`` and model settings mirror ``rt.custom_llm``.
+        """
         c = rt.custom_llm
         api_base = c.base_url.rstrip("/")
         endpoint = ProviderEndpoint(
@@ -50,16 +76,34 @@ class CustomChatCompletionsBrain:
             api_base=api_base,
             api_key=c.api_key,
         )
+        rec = rt.providers_by_id["custom_llm"]
+        api_model, jm = openai_wire_model_and_json_mode(rt, rec)
         return cls(
             endpoint=endpoint,
-            model=ModelRef(id=c.model),
+            model=ModelRef(id=api_model),
             timeout_seconds=c.timeout_seconds,
-            request_json_mode=c.json_mode,
+            request_json_mode=jm,
             system_prompt=rt.system_prompt,
         )
 
     async def reason(self, memory: MemorySession, task: str) -> Intent:
-        """POST ``chat/completions`` and map assistant text to ``Intent``."""
+        """POST ``.../chat/completions`` once and parse the assistant message into an intent.
+
+        Builds messages via :mod:`chief.llm.schema.openai_chat_completions`, sends JSON with
+        optional ``Authorization: Bearer``, then decodes the assistant string through
+        :func:`chief.llm.intent_json.parse_intent_from_model_json`.
+
+        Args:
+            memory: Episode memory serialized into the user content.
+            task: Task string for this reasoning step.
+
+        Returns:
+            A :class:`~chief.domain.ToolIntent` or :class:`~chief.domain.FinalIntent`.
+
+        Raises:
+            ChatCompletionTransportError: On non-success HTTP status or transport errors from httpx.
+            IntentPayloadError: If the assistant content is not valid planner JSON.
+        """
         user = serialize_episode_context(memory, task)
         messages = occ.build_messages(self.system_prompt, user)
         payload = occ.build_request_body(

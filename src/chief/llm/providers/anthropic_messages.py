@@ -1,4 +1,9 @@
-""":class:`~chief.brain.Brain` for Anthropic Messages API."""
+"""Anthropic **Messages** API (:class:`~chief.brain.Brain`).
+
+Uses :mod:`chief.llm.schema.anthropic_messages` for URL, headers (``x-api-key``,
+``anthropic-version``), and body shape. Reads the canonical ``anthropic`` slice from
+:class:`~chief.config.runtime.RuntimeConfig`.
+"""
 
 from __future__ import annotations
 
@@ -20,7 +25,16 @@ from chief.config import RuntimeConfig
 
 @dataclass(frozen=True)
 class AnthropicMessagesBrain:
-    """Brain using Anthropic ``/v1/messages``."""
+    """Brain that calls Anthropic ``/v1/messages`` once per :meth:`reason`.
+
+    Attributes:
+        endpoint: API base URL and ``x-api-key`` material.
+        model: Anthropic model id for the request body.
+        timeout_seconds: Per-request ``httpx`` timeout budget.
+        max_tokens: Generation cap forwarded in the JSON body.
+        api_version: Value for the ``anthropic-version`` header.
+        system_prompt: Rendered planner instructions (injected as the Messages ``system`` block).
+    """
 
     endpoint: ProviderEndpoint
     model: ModelRef
@@ -30,6 +44,11 @@ class AnthropicMessagesBrain:
     system_prompt: str
 
     def __post_init__(self) -> None:
+        """Validate wire format and that a non-empty API key is present.
+
+        Raises:
+            ValueError: If the wire format is not ``ANTHROPIC_MESSAGES`` or ``api_key`` is empty.
+        """
         if self.endpoint.wire_format is not ChatWireFormat.ANTHROPIC_MESSAGES:
             raise ValueError(
                 f"AnthropicMessagesBrain requires ANTHROPIC_MESSAGES, got {self.endpoint.wire_format!r}"
@@ -39,6 +58,14 @@ class AnthropicMessagesBrain:
 
     @classmethod
     def from_runtime(cls, rt: RuntimeConfig) -> AnthropicMessagesBrain:
+        """Build from the canonical ``anthropic`` slice and planner prompt on ``rt``.
+
+        Args:
+            rt: Snapshot from :func:`chief.config.runtime.build_runtime_config`.
+
+        Returns:
+            Frozen brain whose endpoint and generation limits mirror ``rt.anthropic``.
+        """
         a = rt.anthropic
         base = a.vendor_api_base.rstrip("/")
         endpoint = ProviderEndpoint(
@@ -56,7 +83,19 @@ class AnthropicMessagesBrain:
         )
 
     async def reason(self, memory: MemorySession, task: str) -> Intent:
-        """POST once to ``/v1/messages`` and map assistant text to ``Intent``."""
+        """POST ``.../messages`` once and map the assistant text block to an intent.
+
+        Args:
+            memory: Episode memory serialized into user messages.
+            task: Task string for this reasoning step.
+
+        Returns:
+            A :class:`~chief.domain.ToolIntent` or :class:`~chief.domain.FinalIntent`.
+
+        Raises:
+            ChatCompletionTransportError: On non-success HTTP status or transport errors from httpx.
+            IntentPayloadError: If the assistant content is not valid planner JSON.
+        """
         user = serialize_episode_context(memory, task)
         messages = am.build_messages(user)
         payload = am.build_request_body(

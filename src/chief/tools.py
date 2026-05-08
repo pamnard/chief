@@ -59,7 +59,18 @@ _BUILTIN: dict[str, ToolFn] = {
 
 
 def build_registry(runtime: RuntimeConfig) -> dict[str, ToolFn]:
-    """Build tool registry restricted to ``runtime.planner_allowed_tools``."""
+    """Build a name-to-callable registry limited to configured planner tools.
+
+    Args:
+        runtime: Process configuration snapshot; only ``runtime.planner_allowed_tools`` names
+            are included.
+
+    Returns:
+        Mapping of tool name to implementation for built-in tools.
+
+    Raises:
+        ValueError: If any configured name has no built-in implementation in this module.
+    """
     out: dict[str, ToolFn] = {}
     for name in runtime.planner_allowed_tools:
         fn = _BUILTIN.get(name)

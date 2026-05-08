@@ -30,10 +30,10 @@ class MemorySession:
     events: list[dict[str, Any]] = field(default_factory=list)
 
     def record(self, kind: str, payload: dict[str, Any]) -> None:
-        """Append a labeled event for diagnostics.
+        r"""Append a labeled event for diagnostics.
 
         Args:
-            kind: Short category label (e.g. ``\"observation\"``).
+            kind: Short category label (e.g. ``"observation"``).
             payload: Arbitrary JSON-serializable fields.
         """
         self.events.append({"kind": kind, **payload})
